@@ -8,7 +8,7 @@ function getDaftarPasien($pdo) {
             FROM daftar_poli dp 
             JOIN pasien p ON dp.id_pasien = p.id 
             WHERE NOT EXISTS (
-                SELECT 1 FROM periksa WHERE periksa.id_daftar_poli = dp.id
+                SELECT * FROM periksa WHERE periksa.id_daftar_poli = dp.id
             )
             ORDER BY dp.tanggal ASC, dp.no_antrian ASC";
 

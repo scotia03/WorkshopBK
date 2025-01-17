@@ -23,7 +23,7 @@ if ($id_poli) {
 
 // Ambil jadwal dokter berdasarkan dokter yang dipilih
 if ($id_dokter) {
-    $query_jadwal = $pdo->prepare("SELECT * FROM jadwal_periksa WHERE id_dokter = :id_dokter AND statues = 'Aktif'");
+    $query_jadwal = $pdo->prepare("SELECT * FROM jadwal_periksa WHERE id_dokter = :id_dokter AND statues = '1'");
     $query_jadwal->execute([':id_dokter' => $id_dokter]);
     $jadwal_list = $query_jadwal->fetchAll(PDO::FETCH_ASSOC);
 } else {

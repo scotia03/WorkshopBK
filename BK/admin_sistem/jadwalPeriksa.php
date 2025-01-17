@@ -46,25 +46,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         if ($action == 'add' && $hari && $jam_mulai && $jam_selesai && isset($statues)) {
-            // Jika status "Aktif", set jadwal lain menjadi "Non-Aktif"
-            if ($statues == '1') {
-                $stmt = $pdo->prepare("UPDATE jadwal_periksa SET statues = 0 WHERE id_dokter = ?");
-                $stmt->execute([$id_dokter]);
-            }
+            // Cek apakah jadwal dengan hari dan jam yang sama sudah ada
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM jadwal_periksa WHERE id_dokter = ? AND hari = ? AND jam_mulai = ?");
+            $stmt->execute([$id_dokter, $hari, $jam_mulai]);
+            $exists = $stmt->fetchColumn();
 
-            $stmt = $pdo->prepare("INSERT INTO jadwal_periksa (id_dokter, hari, jam_mulai, jam_selesai, statues) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$id_dokter, $hari, $jam_mulai, $jam_selesai, $statues]);
-            $success = 'Jadwal berhasil ditambahkan!';
+            if ($exists) {
+                $error = 'Jadwal sudah ada untuk hari dan jam tersebut!';
+            } else {
+                // Jika status "Aktif", set jadwal lain menjadi "Non-Aktif"
+                if ($statues == '1') {
+                    $stmt = $pdo->prepare("UPDATE jadwal_periksa SET statues = 0 WHERE id_dokter = ?");
+                    $stmt->execute([$id_dokter]);
+                }
+
+                $stmt = $pdo->prepare("INSERT INTO jadwal_periksa (id_dokter, hari, jam_mulai, jam_selesai, statues) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$id_dokter, $hari, $jam_mulai, $jam_selesai, $statues]);
+                $success = 'Jadwal berhasil ditambahkan!';
+            }
         } elseif ($action == 'update' && $id && $hari && $jam_mulai && $jam_selesai && isset($statues)) {
-            // Jika status "Aktif", set jadwal lain menjadi "Non-Aktif"
-            if ($statues == '1') {
-                $stmt = $pdo->prepare("UPDATE jadwal_periksa SET statues = 0 WHERE id_dokter = ? AND id != ?");
-                $stmt->execute([$id_dokter, $id]);
-            }
+            // Cek apakah jadwal dengan hari dan jam yang sama sudah ada (kecuali untuk jadwal yang sedang diupdate)
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM jadwal_periksa WHERE id_dokter = ? AND hari = ? AND jam_mulai = ? AND id != ?");
+            $stmt->execute([$id_dokter, $hari, $jam_mulai, $id]);
+            $exists = $stmt->fetchColumn();
 
-            $stmt = $pdo->prepare("UPDATE jadwal_periksa SET hari = ?, jam_mulai = ?, jam_selesai = ?, statues = ? WHERE id = ? AND id_dokter = ?");
-            $stmt->execute([$hari, $jam_mulai, $jam_selesai, $statues, $id, $id_dokter]);
-            $success = 'Jadwal berhasil diperbarui!';
+            if ($exists) {
+                $error = 'Jadwal sudah ada untuk hari dan jam tersebut!';
+            } else {
+                // Jika status "Aktif", set jadwal lain menjadi "Non-Aktif"
+                if ($statues == '1') {
+                    $stmt = $pdo->prepare("UPDATE jadwal_periksa SET statues = 0 WHERE id_dokter = ? AND id != ?");
+                    $stmt->execute([$id_dokter, $id]);
+                }
+
+                $stmt = $pdo->prepare("UPDATE jadwal_periksa SET hari = ?, jam_mulai = ?, jam_selesai = ?, statues = ? WHERE id = ? AND id_dokter = ?");
+                $stmt->execute([$hari, $jam_mulai, $jam_selesai, $statues, $id, $id_dokter]);
+                $success = 'Jadwal berhasil diperbarui!';
+            }
         } elseif ($action == 'delete' && $id) {
             $stmt = $pdo->prepare("DELETE FROM jadwal_periksa WHERE id = ? AND id_dokter = ?");
             $stmt->execute([$id, $id_dokter]);
@@ -92,6 +110,7 @@ if (isset($_GET['edit'])) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">
