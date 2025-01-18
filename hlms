@@ -10,3 +10,225 @@ CREATE TABLE konsultasi (
     FOREIGN KEY (id_pasien) REFERENCES pasien(id),
     FOREIGN KEY (id_dokter) REFERENCES dokter(id)
 );
+id	keluhan	pertanyaan	jawaban	tgl_konsultasi	id_pasien	id_dokter	
+
+<?php 
+session_start();
+require_once 'db.php';
+
+// Inisialisasi variabel
+$id_poli = isset($_POST['id_poli']) ? $_POST['id_poli'] : '';
+$id_dokter = isset($_POST['id_dokter']) ? $_POST['id_dokter'] : '';
+$success_message = '';
+$error_message = '';
+
+// Ambil data Poli
+$query_poli = $pdo->query("SELECT * FROM poli");
+$poli_list = $query_poli->fetchAll(PDO::FETCH_ASSOC);
+
+// Ambil data dokter berdasarkan poli yang dipilih
+if ($id_poli) {
+    $query_dokter = $pdo->prepare("SELECT * FROM dokter WHERE id_poli = :id_poli");
+    $query_dokter->execute([':id_poli' => $id_poli]);
+    $dokter_list = $query_dokter->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $dokter_list = [];
+}
+
+// Proses penyimpanan data jika form disubmit
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
+    $tgl_periksa = $_POST['tgl_periksa'];
+    $id_poli = $_POST['id_poli'];
+    $id_dokter = $_POST['id_dokter'];
+    $keluhan = $_POST['keluhan'];
+    $catatan_konsultasi = $_POST['catatan_konsultasi'];
+
+    try {
+        // Masukkan data konsultasi ke dalam tabel
+        $query_konsultasi = $pdo->prepare("INSERT INTO konsultasi (id_poli, id_dokter, tgl_periksa, keluhan, catatan_konsultasi) VALUES (:id_poli, :id_dokter, :tgl_periksa, :keluhan, :catatan_konsultasi)");
+        $query_konsultasi->execute([ 
+            ':id_poli' => $id_poli,
+            ':id_dokter' => $id_dokter,
+            ':tgl_periksa' => $tgl_periksa,
+            ':keluhan' => $keluhan,
+            ':catatan_konsultasi' => $catatan_konsultasi
+        ]);
+
+        $success_message = "Konsultasi berhasil disimpan!";
+        header('Location: riwayatKonsultasi.php');
+        exit;
+
+    } catch (PDOException $e) {
+        $error_message = "Gagal menyimpan data: " . $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pemeriksaan</title>
+    <style>
+        /* Reset beberapa default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            color: #333;
+            padding: bold;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #007BFF, #0056b3);
+            padding: 15px 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: flex-end; /* Menempatkan menu di kanan */
+            align-items: center;
+            z-index: 1000;
+        }
+        .navbar h1 {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            font-size: 1em;
+            margin-right: 50%; /* Memberikan jarak antar tautan */
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-radius: 5px;
+            margin-left: 10px; /* Memberikan jarak antar tautan */
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding-top: 0px; /* Untuk menyesuaikan dengan tinggi navbar */
+            width: 100%;
+        }
+
+        .form-box {
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .form-box h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        form input[type="date"],
+        form select,
+        form textarea {
+            width: 70%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        form button {
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <a href="dashbordPasien.php">Home</a>
+            <a href="daftarPoli.php">Daftar Poli</a>
+            <a href="riwayatPoli.php">Riwayat Poli</a>
+            <a href="konsultasiPasien.php">Konsultasi</a>
+            <a href="riwayatKonsultasi.php">Riwayat Konsultasi</a>
+            <a href="logoutPasien.php">Logout</a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-box">
+            <h1>Konsultasi Poli</h1>
+
+            <?php if ($success_message): ?>
+                <div style="color: green;"><?= $success_message ?></div>
+            <?php endif; ?>
+
+            <?php if ($error_message): ?>
+                <div style="color: red;"><?= $error_message ?></div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <label for="tgl_periksa">Tanggal Pemeriksaan:</label>
+                <input type="date" name="tgl_periksa" id="tgl_periksa" required>
+
+                <label for="id_poli">Pilih Poli:</label>
+                <select id="id_poli" name="id_poli" onchange="this.form.submit()">
+                    <option value="">Pilih Poli</option>
+                    <?php foreach ($poli_list as $poli): ?>
+                        <option value="<?= $poli['id'] ?>" <?= $poli['id'] == $id_poli ? 'selected' : '' ?>><?= $poli['nama_poli'] ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <?php if ($id_poli): ?>
+                    <label for="id_dokter">Pilih Dokter:</label>
+                    <select id="id_dokter" name="id_dokter">
+                        <option value="">Pilih Dokter</option>
+                        <?php foreach ($dokter_list as $dokter): ?>
+                            <option value="<?= $dokter['id'] ?>" <?= $dokter['id'] == $id_dokter ? 'selected' : '' ?>><?= $dokter['nama'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
+
+                <label for="keluhan">Keluhan:</label>
+                <textarea name="keluhan" id="keluhan" rows="4" required></textarea>
+
+                <label for="catatan_konsultasi">Catatan:</label>
+                <textarea name="catatan_konsultasi" id="catatan_konsultasi" rows="4" required></textarea>
+
+                <button type="submit">Kirim</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
