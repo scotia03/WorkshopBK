@@ -1,0 +1,12 @@
+CREATE TABLE konsultasi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tgl_konsultasi DATETIME NOT NULL,
+    id_pasien INT NOT NULL,
+    id_dokter INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    pertanyaan TEXT NOT NULL,
+    tanggapan TEXT,
+    status ENUM('Menunggu Tanggapan', 'Selesai') DEFAULT 'Menunggu Tanggapan',
+    FOREIGN KEY (id_pasien) REFERENCES pasien(id),
+    FOREIGN KEY (id_dokter) REFERENCES dokter(id)
+);
