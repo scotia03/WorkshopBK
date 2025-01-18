@@ -231,107 +231,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         </div>
     </div>
 </body>
-</html>
+</html
 
-<?php 
-session_start();
-require_once 'db.php'; // Pastikan file ini berisi koneksi ke database
+i
 
-// Inisialisasi variabel
-$id_poli = isset($_POST['id_poli']) ? $_POST['id_poli'] : '';
-$id_dokter = isset($_POST['id_dokter']) ? $_POST['id_dokter'] : '';
-$success_message = '';
-$error_message = '';
 
-// Ambil daftar poli
-$query_poli = $pdo->query("SELECT * FROM poli");
-$poli_list = $query_poli->fetchAll(PDO::FETCH_ASSOC);
 
-// Ambil daftar dokter berdasarkan poli yang dipilih
-$dokter_list = [];
-if ($id_poli) {
-    $query_dokter = $pdo->prepare("SELECT * FROM dokter WHERE id_poli = :id_poli");
-    $query_dokter->execute([':id_poli' => $id_poli]);
-    $dokter_list = $query_dokter->fetchAll(PDO::FETCH_ASSOC);
-}
 
-// Proses penyimpanan data konsultasi
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
-    $tgl_konsultasi = $_POST['tgl_konsultasi'];
-    $id_pasien = $_SESSION['id_pasien']; // Ambil ID pasien dari session
-    $keluhan = $_POST['keluhan'];
-    $pertanyaan = $_POST['pertanyaan'];
 
-    if ($id_poli && $id_dokter && $tgl_konsultasi && $keluhan && $pertanyaan) {
-        try {
-            // Simpan data konsultasi ke dalam tabel
-            $query_konsultasi = $pdo->prepare("
-                INSERT INTO konsultasi (keluhan, pertanyaan, tgl_konsultasi, id_pasien, id_dokter)
-                VALUES (:keluhan, :pertanyaan, :tgl_konsultasi, :id_pasien, :id_dokter)
-            ");
-            $query_konsultasi->execute([
-                ':keluhan' => $keluhan,
-                ':pertanyaan' => $pertanyaan,
-                ':tgl_konsultasi' => $tgl_konsultasi,
-                ':id_pasien' => $id_pasien,
-                ':id_dokter' => $id_dokter
-            ]);
-
-            $success_message = "Konsultasi berhasil disimpan!";
-        } catch (PDOException $e) {
-            $error_message = "Gagal menyimpan data: " . $e->getMessage();
-        }
-    } else {
-        $error_message = "Semua field wajib diisi.";
-    }
-}
-?>
-
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konsultasi Poli</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fc;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar {
-            background-color: #007bff;
-            padding: 15px;
-            color: white;
-            text-align: center;
-        }
-        .form-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-        }
-        .form-box {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .form-box h1 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        form label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        form input,
+put,
         form select,
         form textarea {
             width: 100%;
